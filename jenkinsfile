@@ -36,7 +36,7 @@
 
 stage ('Docker Build & Publish'){
     steps{
-       sh "ls"
+       sh "cd ${params.APP}"
        sh "docker build -t ${params.DTR}/${params.APP}:${params.DOCKER_TAG} ."
          sh "docker push  ${params.DTR}/${params.APP}:${params.DOCKER_TAG}"
     }
