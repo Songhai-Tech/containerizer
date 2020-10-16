@@ -6,7 +6,7 @@
     string(name: 'REPO', defaultValue: 'https://github.com/Songhai-Tech/SCSS.git', description: 'Repository of yaml configs')
     string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Git branch')
     booleanParam(name: 'CreateEnv', defaultValue: true, description: 'Create new namespace?')
-    string(name: 'NNEW NAMESPACE', defaultValue: '', description: 'Name of your new environment')
+    string(name: 'NEW_NAMESPACE', defaultValue: '', description: 'Name of your new environment')
     choice(name: 'NAMESPACE', choices: ['','admin', 'sudirlaycoders'], description: 'Select existing environment')
 
   }
@@ -38,7 +38,7 @@
             steps {
                 script {
                     if (params.CreateEnv) {
-                        sh "echo create new namespace named: ${params.NAMESPACE}"
+                        sh "echo create new namespace named: ${params.NEW_NAMESPACE}"
                     } else {
                         sh "echo selecting existing namespace named: ${params.NAMESPACE} "
                     }
