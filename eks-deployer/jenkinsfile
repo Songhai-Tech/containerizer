@@ -35,9 +35,9 @@
             steps {
                 script {
                     if (params.CreateEnv) {
-                        sh "echo create new namespace named: ${params.NEW_NAMESPACE}"
+                        sh "kubectl_dn ${params.NEW_NAMESPACE}"
                     } else {
-                        sh "echo selecting existing namespace named: ${params.NAMESPACE} "
+                        sh "kubectl_dn ${params.NAMESPACE} "
                     }
                 }
             }
