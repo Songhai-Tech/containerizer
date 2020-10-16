@@ -35,7 +35,7 @@
             steps {
                 script {
                     if (params.CreateEnv) {
-                        sh "sudo /usr/local/bin/kubectl config set-context --current --namespace=${params.NEW_NAMESPACE}"
+                        sh "sudo /usr/local/bin/kubectl create namespace ${params.NEW_NAMESPACE}"
                     } else {
                         sh "sudo /usr/local/bin/kubectl config set-context --current --namespace=${params.NAMESPACE}"
                     }
