@@ -3,7 +3,7 @@
   agent any
   parameters {
     string(name: 'APP', defaultValue: 'scss', description: 'Application name')
-    string(name: 'REPO', defaultValue: 'https://github.com/Songhai-Tech/SCSS.git', description: "Repository of App you want to containerize")
+    string(name: 'REPO', defaultValue: 'https://github.com/Songhai-Tech/SCSS.git', description: "Repository must contain DOCKERFILE")
     string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Git branch')
     string(name: 'DTR', defaultValue: 'sudirlay', description: 'DTR repository name')
     string(name: 'DOCKER_TAG', defaultValue: '1.0', description: 'Enter custom docker tag (version)')
