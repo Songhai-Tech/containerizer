@@ -1,0 +1,58 @@
+    pipeline {
+
+  agent any
+  parameters {
+    string(name: '.YAML', defaultValue: '', description: 'eks resource such as pod, ingress, deployment etc.')
+    string(name: 'REPO', defaultValue: 'https://github.com/Songhai-Tech/SCSS.git', description: 'Repository of yaml configs')
+    string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Git branch')
+    string(name: '', defaultValue: '', description: 'Git branch')
+    booleanParam(name: 'CreateEnv', defaultValue: true, description: 'Create new namespace?')
+    choice(name: 'NAMESPACE', choices: ['','admin', 'sudirlaycoders'], description: 'Enter new namespace or select existing')
+
+  }
+
+  stages {
+
+   stage('Checkout Code'){
+      steps {
+        ansiColor('xterm') {
+          deleteDir()
+          checkout scm
+          checkout([
+            $class: 'GitSCM',
+            branches: [[ name: "${params.GIT_BRANCH}" ]],
+            doGenerateSubmoduleConfigurations: false,
+            userRemoteConfigs: [[credentialsId: 'GIT_SCM', url: "${params.REPO}" ]],
+            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${env.APP}"]]
+          ])
+
+            sh "uname -"
+            
+           
+ 
+        }
+      }
+    }
+  stage('EKS Deploy'){  
+    if(params.CreateEnv.toBoolean()){  
+        echo "Yes Create ${params.NAMESPACE}"
+    } else {
+        echo "Deploy to existing ${params.NAMESPACE"
+    }
+}
+
+
+
+}
+
+  post {
+    success {
+      sh "echo Success."
+      deleteDir()
+    }
+    failure {
+      sh "echo Failure."
+    }
+  } // end post
+
+}
