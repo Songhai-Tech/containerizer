@@ -37,7 +37,7 @@
     if(params.CreateEnv.toBoolean()){  
         echo "Yes Create ${params.NAMESPACE}"
     } else {
-        echo "Deploy to existing ${params.NAMESPACE"
+        echo "Deploy to existing ${params.NAMESPACE}"
     }
 }
 
