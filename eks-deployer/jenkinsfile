@@ -25,9 +25,6 @@
             userRemoteConfigs: [[credentialsId: 'GIT_SCM', url: "${params.REPO}" ]],
             extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${env.APP}"]]
           ])
-
-            sh "uname -"     
- 
         }
       }
     }
