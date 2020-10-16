@@ -31,17 +31,22 @@
         }
       }
     }
-
-      stage('EKS Deploy'){  
-   steps { 
-      if (params.CreateEnv.toBoolean()){  
-        sh "echo Yes Create: ${params.NAMESPACE}"
-    } else {
-        sh "echo Deploy to existing: ${params.NAMESPACE}"
+        
+      
+      
+    stage("EKS Deploy") {
+            steps {
+                script {
+                    if (params.CreateEnv) {
+                        sh "echo create new namespace named: ${params.NAMESPACE}"
+                    } else {
+                        sh "echo selecting existing namespace named: ${params.NAMESPACE} "
+                    }
+                }
+            }
     }
-  }
- }
 }
+        
         
   post {
     success {
