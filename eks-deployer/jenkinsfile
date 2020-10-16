@@ -34,7 +34,7 @@
 
       stage('EKS Deploy'){  
    steps { 
-      if(params.CreateEnv.toBoolean()){  
+      if (params.CreateEnv.toBoolean()){  
         sh "echo Yes Create: ${params.NAMESPACE}"
     } else {
         sh "echo Deploy to existing: ${params.NAMESPACE}"
