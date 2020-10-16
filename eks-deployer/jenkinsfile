@@ -39,12 +39,10 @@
     } else {
         echo "Deploy to existing ${params.NAMESPACE}"
     }
+  }
 }
-
-
-
-}
-
+  }
+        
   post {
     success {
       sh "echo Success."
