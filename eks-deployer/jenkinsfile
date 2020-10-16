@@ -5,9 +5,9 @@
     string(name: '.YAML', defaultValue: '', description: 'eks resource such as pod, ingress, deployment etc.')
     string(name: 'REPO', defaultValue: 'https://github.com/Songhai-Tech/SCSS.git', description: 'Repository of yaml configs')
     string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Git branch')
-    string(name: '', defaultValue: '', description: 'Git branch')
     booleanParam(name: 'CreateEnv', defaultValue: true, description: 'Create new namespace?')
-    choice(name: 'NAMESPACE', choices: ['','admin', 'sudirlaycoders'], description: 'Enter new namespace or select existing')
+    string(name: 'NNEW NAMESPACE', defaultValue: '', description: 'Name of your new environment')
+    choice(name: 'NAMESPACE', choices: ['','admin', 'sudirlaycoders'], description: 'Select existing environment')
 
   }
 
