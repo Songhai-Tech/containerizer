@@ -1,0 +1,66 @@
+    pipeline {
+
+  agent any
+  parameters {
+    string(name: 'HELM_REPO', defaultValue: 'https://charts.bitnami.com/bitnami', description: 'Helmchart repo to add')
+    string(name: 'RELEASE', defaultValue: '', description: 'Enter release for example: bitnami/wordpress')
+    booleanParam(name: 'CreateEnv', defaultValue: true, description: 'Create new namespace?')
+    string(name: 'NEW_NAMESPACE', defaultValue: '', description: 'Name of your new environment')
+    choice(name: 'NAMESPACE', choices: ['','admin', 'sudirlaycoders'], description: 'Select existing environment')
+
+  }
+
+  stages {
+
+   stage('Checkout Code'){
+      steps {
+        ansiColor('xterm') {
+          deleteDir()
+          checkout scm
+          checkout([
+            $class: 'GitSCM',
+            branches: [[ name: "${params.GIT_BRANCH}" ]],
+            doGenerateSubmoduleConfigurations: false,
+            userRemoteConfigs: [[credentialsId: 'GIT_SCM', url: "${params.REPO}" ]],
+            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${env.APP}"]]
+          ])
+        }
+      }
+    }
+        
+          stage("Select EKS Environment") {
+            steps {
+                script {
+                    if (params.CreateEnv) {
+                        sh "sudo /usr/local/bin/kubectl create namespace ${params.NEW_NAMESPACE}"
+                        sh "sudo /usr/local/bin/kubectl config set-context --current --namespace=${params.NEW_NAMESPACE}"
+                    } else {
+                        sh "sudo /usr/local/bin/kubectl config set-context --current --namespace=${params.NAMESPACE}"
+                    }
+                }
+            }
+    }
+      
+      
+      
+      
+    stage("Helms Deployment") {
+            steps {
+                script {
+                    sh "helm install my-release ${params.RELEASE}"
+                }
+            }
+    }
+}
+        
+        
+  post {
+    success {
+      sh "echo Success."
+      deleteDir()
+    }
+    failure {
+      sh "echo Failure."
+    }
+  } // end post
+}
