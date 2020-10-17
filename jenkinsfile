@@ -47,6 +47,10 @@ stage ('Docker Build & Publish'){
     failure {
       sh "echo Failure."
     }
+    
+    always { 
+            cleanWs()
+        }
   } // end post
 
 }
