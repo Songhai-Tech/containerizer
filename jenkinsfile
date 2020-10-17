@@ -14,7 +14,7 @@
    stage('Checkout Code'){
       steps {
         ansiColor('xterm') {
-          deleteDir()
+         // deleteDir()
           checkout scm
           checkout([
             $class: 'GitSCM',
@@ -46,9 +46,9 @@ stage ('Docker Build & Publish'){
       sh "echo Failure."
     }
     
-    always { 
-        cleanWs()
-  } // end post
+ //   always { 
+//        cleanWs()
+//  } // end post
 
 }
 }
