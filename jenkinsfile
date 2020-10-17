@@ -23,11 +23,6 @@
             userRemoteConfigs: [[credentialsId: 'GIT_SCM', url: "${params.REPO}" ]],
             extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${env.APP}"]]
           ])
-
-            sh "uname -r"
-            
-           
- 
         }
       }
     }
@@ -37,7 +32,7 @@
 stage ('Docker Build & Publish'){
     steps{
       
-       sh "cd ${params.APP} && docker build -t ${params.DTR}/${params.APP}:${params.DOCKER_TAG} ."
+       sh "cd ${params.APP} && ls && docker build -t ${params.DTR}/${params.APP}:${params.DOCKER_TAG} ."
          sh "docker push  ${params.DTR}/${params.APP}:${params.DOCKER_TAG}"
     }
  }
