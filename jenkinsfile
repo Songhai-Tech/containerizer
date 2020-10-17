@@ -20,8 +20,7 @@
             $class: 'GitSCM',
             branches: [[ name: "${params.GIT_BRANCH}" ]],
             doGenerateSubmoduleConfigurations: false,
-            userRemoteConfigs: [[credentialsId: 'GIT_SCM', url: "${params.REPO}" ]],
-            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${env.APP}"]]
+            userRemoteConfigs: [[credentialsId: 'GIT_SCM', url: "${params.REPO}" ]]
           ])
         }
       }
