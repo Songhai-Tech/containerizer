@@ -3,6 +3,7 @@
   agent any
   parameters {
     string(name: 'APP', defaultValue: 'scss', description: 'Application name')
+    string(name: 'PREP_PARAMS', defaultValue: '', description: 'Enter chain prep commands nested by &&')
     string(name: 'REPO', defaultValue: 'https://github.com/Songhai-Tech/SCSS.git', description: "Repository must contain DOCKERFILE")
     string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Git branch')
     string(name: 'DTR', defaultValue: 'sudirlay', description: 'DTR repository name')
@@ -31,6 +32,7 @@
 stage ('Docker Build & Publish'){
     steps{
     dir("${params.APP}"){
+       sh "${params.PREP_PARAMS}"
        sh "docker build -t ${params.DTR}/${params.APP}:${params.DOCKER_TAG} ."
          sh "docker push  ${params.DTR}/${params.APP}:${params.DOCKER_TAG}" 
     }
