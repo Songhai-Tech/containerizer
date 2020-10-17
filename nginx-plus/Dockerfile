@@ -1,55 +1,85 @@
 FROM alpine:3.11
 
-LABEL maintainer="Sulayman Touray"
+LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 
-## Install Nginx Plus
-# Download certificate and key from the customer portal https://cs.nginx.com
-# and copy to the build context and set correct permissions
+# Define NGINX versions for NGINX Plus and NGINX Plus modules
+# Uncomment this block and the versioned nginxPackages in the main RUN
+# instruction to install a specific release
+# ENV NGINX_VERSION 21
+# ENV NJS_VERSION   0.3.9
+# ENV PKG_RELEASE   1
 
-# Prepare repo config and install NGINX Plus (https://cs.nginx.com/repo_setup)
-RUN wget -O /etc/apk/keys/nginx_signing.rsa.pub https://nginx.org/keys/nginx_signing.rsa.pub \
- && printf "https://plus-pkgs.nginx.com/alpine/v`egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release`/main\n" | tee -a /etc/apk/repositories \
- && apk add nginx-plus \
- ## Optional: Install NGINX Plus Modules from repo
- # See https://www.nginx.com/products/nginx/modules
- #&& apk add nginx-plus-module-modsecurity \
- #&& apk add nginx-plus-module-geoip \
- #&& apk add nginx-plus-module-njs \
- ## Optional: Install Tools
- # curl
- && apk add curl \
- # Clear apk cache
- && rm -rf /var/cache/apk/* \
- # Remove default nginx config
- && rm /etc/nginx/conf.d/default.conf \
- # Required for this demo: Web content root directory
- && mkdir -p /usr/share/nginx/html \
- && chown -R nginx /usr/share/nginx/html \
- # Optional: Create cache folder and set permissions for proxy caching
- && mkdir -p /var/cache/nginx \
- && chown -R nginx /var/cache/nginx \
- # Optional: Create State file folder and set permissions
- && mkdir -p /var/lib/nginx/state \
- && chown -R nginx /var/lib/nginx/state
+# Download certificate and key from the customer portal (https://cs.nginx.com)
+# and copy to the build context
+COPY nginx-repo.crt /etc/apk/cert.pem
+COPY nginx-repo.key /etc/apk/cert.key
 
-# Optional: COPY over any of your SSL certs for HTTPS servers
-# e.g.
+RUN set -x \
+# Create nginx user/group first, to be consistent throughout Docker variants
+    && addgroup -g 101 -S nginx \
+    && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx \
+# Install the latest release of NGINX Plus and/or NGINX Plus modules
+# Uncomment individual modules if necessary
+# Use versioned packages over defaults to specify a release
+    && nginxPackages=" \
+        nginx-plus \
+        # nginx-plus=${NGINX_VERSION}-${PKG_RELEASE} \
+        # nginx-plus-module-xslt \
+        # nginx-plus-module-xslt=${NGINX_VERSION}-${PKG_RELEASE} \
+        # nginx-plus-module-geoip \
+        # nginx-plus-module-geoip=${NGINX_VERSION}-${PKG_RELEASE} \
+        # nginx-plus-module-image-filter \
+        # nginx-plus-module-image-filter=${NGINX_VERSION}-${PKG_RELEASE} \
+        # nginx-plus-module-perl \
+        # nginx-plus-module-perl=${NGINX_VERSION}-${PKG_RELEASE} \
+        # nginx-plus-module-njs \
+        # nginx-plus-module-njs=${NGINX_VERSION}.${NJS_VERSION}-${PKG_RELEASE} \
+    " \
+    KEY_SHA512="e7fa8303923d9b95db37a77ad46c68fd4755ff935d0a534d26eba83de193c76166c68bfe7f65471bf8881004ef4aa6df3e34689c305662750c0172fca5d8552a *stdin" \
+    && apk add --no-cache --virtual .cert-deps \
+        openssl \
+    && wget -O /tmp/nginx_signing.rsa.pub https://nginx.org/keys/nginx_signing.rsa.pub \
+    && if [ "$(openssl rsa -pubin -in /tmp/nginx_signing.rsa.pub -text -noout | openssl sha512 -r)" = "$KEY_SHA512" ]; then \
+        echo "key verification succeeded!"; \
+        mv /tmp/nginx_signing.rsa.pub /etc/apk/keys/; \
+    else \
+        echo "key verification failed!"; \
+        exit 1; \
+    fi \
+    && apk del .cert-deps \
+    && apk add -X "https://plus-pkgs.nginx.com/alpine/v$(egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release)/main" --no-cache $nginxPackages \
+    && if [ -n "/etc/apk/keys/nginx_signing.rsa.pub" ]; then rm -f /etc/apk/keys/nginx_signing.rsa.pub; fi \
+    && if [ -n "/etc/apk/cert.key" && -n "/etc/apk/cert.pem"]; then rm -f /etc/apk/cert.key /etc/apk/cert.pem; fi \
+# Bring in gettext so we can get `envsubst`, then throw
+# the rest away. To do this, we need to install `gettext`
+# then move `envsubst` out of the way so `gettext` can
+# be deleted completely, then move `envsubst` back.
+    && apk add --no-cache --virtual .gettext gettext \
+    && mv /usr/bin/envsubst /tmp/ \
+    \
+    && runDeps="$( \
+        scanelf --needed --nobanner /tmp/envsubst \
+            | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
+            | sort -u \
+            | xargs -r apk info --installed \
+            | sort -u \
+    )" \
+    && apk add --no-cache $runDeps \
+    && apk del .gettext \
+    && mv /tmp/envsubst /usr/local/bin/ \
+# Bring in tzdata so users could set the timezones through the environment
+# variables
+    && apk add --no-cache tzdata \
+# Bring in curl and ca-certificates to make registering on DNS SD easier
+    && apk add --no-cache curl ca-certificates \
+# Forward request and error logs to Docker log collector
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log
 
-# COPY web content
-COPY usr/share/nginx/html /usr/share/nginx/html
+EXPOSE 80
 
-# COPY Nginx configuration directory
-COPY etc/nginx /etc/nginx
-RUN chown -R nginx:nginx /etc/nginx \
- # Check imported NGINX config
- && nginx -t \
- # Forward request logs to docker log collector
- && ln -sf /dev/stdout /var/log/nginx/access.log \
- && ln -sf /dev/stderr /var/log/nginx/error.log \
- # **Remove the Nginx Plus cert/keys from the image**
- 
-
-# EXPOSE ports, HTTP 80, HTTPS 443 and, Nginx status page 8080
-EXPOSE 8080
 STOPSIGNAL SIGTERM
+
 CMD ["nginx", "-g", "daemon off;"]
+
+# vim:syntax=Dockerfile
