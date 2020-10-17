@@ -49,8 +49,7 @@ stage ('Docker Build & Publish'){
     }
     
     always { 
-            cleanWs()
-        }
+  step([$class: 'WsCleanup'])        }
   } // end post
 
 }
