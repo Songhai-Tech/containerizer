@@ -21,7 +21,7 @@
             $class: 'GitSCM',
             branches: [[ name: "${params.GIT_BRANCH}" ]],
             doGenerateSubmoduleConfigurations: false,
-            userRemoteConfigs: [[credentialsId: 'GIT_SCM', url: "${params.REPO}" ]]
+            userRemoteConfigs: [[credentialsId: 'git', url: "${params.REPO}" ]]
           ])
         }
       }
