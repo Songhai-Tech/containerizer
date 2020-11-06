@@ -1,5 +1,6 @@
     pipeline {
 
+ // YO
   agent any
   parameters {
     string(name: 'APP', defaultValue: 'scss', description: 'Application name')
